@@ -1,24 +1,33 @@
 const serverURL = 'https://jsonplaceholder.typicode.com/posts'; // Simulated server endpoint
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [];
 
-// Sync quotes with the server
-async function syncQuotes() {
+// Fetch quotes from the server
+async function fetchQuotesFromServer() {
     try {
-    // Fetch quotes from the server
     const response = await fetch(serverURL);
+    if (!response.ok) {
+        throw new Error('Failed to fetch quotes from server.');
+    }
     const serverQuotes = await response.json();
 
-    // Map server quotes to our format (if needed)
-    const formattedServerQuotes = serverQuotes.map(item => ({
+    // Map server quotes to match local format
+    return serverQuotes.map(item => ({
         text: item.title,
       category: "Server Category" // Default or derived category
     }));
-
-    // Merge server quotes with local quotes
-    mergeServerQuotes(formattedServerQuotes);
-
     } catch (error) {
-    console.error("Error syncing quotes with server:", error);
+    console.error("Error fetching quotes from server:", error);
+    return [];
+    }
+}
+
+// Sync quotes with server
+async function syncQuotes() {
+    try {
+    const serverQuotes = await fetchQuotesFromServer();
+    mergeServerQuotes(serverQuotes);
+    } catch (error) {
+    console.error("Error during sync:", error);
     }
 }
 
@@ -108,9 +117,9 @@ function filterQuotes() {
 }
 
 // Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     populateCategories();
     filterQuotes();
-  syncQuotes(); // Initial sync with the server
+  await syncQuotes(); // Initial sync with the server
   setInterval(syncQuotes, 60000); // Periodic sync every 60 seconds
 });
