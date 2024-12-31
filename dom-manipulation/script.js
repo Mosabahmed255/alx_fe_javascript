@@ -21,13 +21,13 @@ function showRandomQuote() {
         : quotes.filter(quote => quote.category === selectedCategory);
 
     if (filteredQuotes.length === 0) {
-        quoteDisplay.textContent = "No quotes available in this category.";
+        quoteDisplay.innerHTML = "No quotes available in this category.";
         return;
     }
 
     const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
     const randomQuote = filteredQuotes[randomIndex];
-    quoteDisplay.textContent = `"${randomQuote.text}" - ${randomQuote.category}`;
+    quoteDisplay.innerHTML = `"${randomQuote.text}" - <strong>${randomQuote.category}</strong>`;
 }
 
 // Function to add a new quote
@@ -44,10 +44,7 @@ function addQuote() {
 
     // Add category to filter if it's new
     if (!Array.from(categoryFilter.options).some(option => option.value === quoteCategory)) {
-        const newOption = document.createElement('option');
-        newOption.value = quoteCategory;
-        newOption.textContent = quoteCategory;
-        categoryFilter.appendChild(newOption);
+        categoryFilter.innerHTML += `<option value="${quoteCategory}">${quoteCategory}</option>`;
     }
 
     newQuoteText.value = "";
@@ -55,20 +52,19 @@ function addQuote() {
     alert("Quote added successfully!");
 }
 
-// Event Listeners
-newQuoteButton.addEventListener('click', showRandomQuote);
-addQuoteButton.addEventListener('click', addQuote);
-
 // Populate category filter
 function populateCategories() {
     const categories = [...new Set(quotes.map(quote => quote.category))];
+    let optionsHTML = '<option value="all">All</option>';
     categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category;
-        option.textContent = category;
-        categoryFilter.appendChild(option);
+        optionsHTML += `<option value="${category}">${category}</option>`;
     });
+    categoryFilter.innerHTML = optionsHTML;
 }
+
+// Event Listeners
+newQuoteButton.addEventListener('click', showRandomQuote);
+addQuoteButton.addEventListener('click', addQuote);
 
 // Initial Setup
 populateCategories();
