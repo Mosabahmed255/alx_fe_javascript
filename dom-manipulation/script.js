@@ -48,7 +48,7 @@ function mergeServerQuotes(serverQuotes) {
     localStorage.setItem('quotes', JSON.stringify(quotes));
 
   // Notify user and refresh UI
-    alert('Quotes synced with the server.');
+    alert('Quotes synced with server!');
     populateCategories();
     filterQuotes();
 }
