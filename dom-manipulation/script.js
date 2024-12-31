@@ -1,54 +1,50 @@
-const serverURL = 'https://jsonplaceholder.typicode.com/posts'; // Replace with a real or mock server endpoint
-
+const serverURL = 'https://jsonplaceholder.typicode.com/posts'; // Simulated server endpoint
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [];
 
-// Fetch quotes from server
-async function fetchQuotesFromServer() {
+// Sync quotes with the server
+async function syncQuotes() {
     try {
+    // Fetch quotes from the server
     const response = await fetch(serverURL);
     const serverQuotes = await response.json();
 
-    // Map server quotes to our format (if server format differs)
-    const formattedQuotes = serverQuotes.map(item => ({
+    // Map server quotes to our format (if needed)
+    const formattedServerQuotes = serverQuotes.map(item => ({
         text: item.title,
       category: "Server Category" // Default or derived category
     }));
 
-    mergeServerQuotes(formattedQuotes);
+    // Merge server quotes with local quotes
+    mergeServerQuotes(formattedServerQuotes);
+
     } catch (error) {
-    console.error("Error fetching quotes from server:", error);
+    console.error("Error syncing quotes with server:", error);
     }
 }
 
 // Merge server quotes with local quotes
 function mergeServerQuotes(serverQuotes) {
     const localQuotes = JSON.parse(localStorage.getItem('quotes')) || [];
-
-  // Merge logic: add new quotes from server while avoiding duplicates
     const mergedQuotes = [...localQuotes];
+
+  // Add only new quotes from the server
     serverQuotes.forEach(serverQuote => {
     if (!localQuotes.some(localQuote => localQuote.text === serverQuote.text)) {
         mergedQuotes.push(serverQuote);
     }
     });
 
-  // Save merged quotes
+  // Update local storage
     quotes = mergedQuotes;
     localStorage.setItem('quotes', JSON.stringify(quotes));
 
-  // Notify user of updates
-    alert('Quotes have been synced with the server.');
+  // Notify user and refresh UI
+    alert('Quotes synced with the server.');
     populateCategories();
     filterQuotes();
 }
 
-// Periodically sync data with the server
-function startPeriodicSync(interval = 60000) { // Default: every 60 seconds
-    fetchQuotesFromServer();
-    setInterval(fetchQuotesFromServer, interval);
-}
-
-// Add a new quote and sync to server (simulated)
+// Add a new quote and sync it with the server
 async function addQuote() {
     const newQuoteText = document.getElementById('newQuoteText').value;
     const newQuoteCategory = document.getElementById('newQuoteCategory').value;
@@ -60,7 +56,7 @@ async function addQuote() {
     populateCategories();
     filterQuotes();
 
-    // Sync to server (POST request simulation)
+    // Sync to server
     try {
         const response = await fetch(serverURL, {
         method: 'POST',
@@ -71,19 +67,19 @@ async function addQuote() {
         });
 
         if (response.ok) {
-        alert('Quote added and synced with server!');
+        alert('Quote added and synced with the server!');
         } else {
-        console.error("Failed to sync new quote with server.");
+        console.error("Failed to sync new quote with the server.");
         }
     } catch (error) {
-        console.error("Error syncing new quote with server:", error);
+        console.error("Error syncing new quote with the server:", error);
     }
     } else {
     alert('Please fill in both fields!');
     }
 }
 
-// Populate categories dynamically
+// Populate the category filter dropdown
 function populateCategories() {
     const categoryFilter = document.getElementById('categoryFilter');
     const categories = Array.from(new Set(quotes.map(quote => quote.category)));
@@ -96,7 +92,7 @@ function populateCategories() {
     });
 }
 
-// Display quotes
+// Filter quotes by category
 function filterQuotes() {
     const selectedCategory = document.getElementById('categoryFilter').value;
     const filteredQuotes = selectedCategory === 'all'
@@ -111,9 +107,10 @@ function filterQuotes() {
     });
 }
 
-// Load initial quotes and start sync
+// Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
     populateCategories();
     filterQuotes();
-    startPeriodicSync();
+  syncQuotes(); // Initial sync with the server
+  setInterval(syncQuotes, 60000); // Periodic sync every 60 seconds
 });
